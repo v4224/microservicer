@@ -1,4 +1,4 @@
-package com.thereisnouser.customer;
+package com.thereisnouser.fraud;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -9,18 +9,20 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-public class Customer {
+public class FraudCheckHistory {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String firstName;
-    private String lastName;
-    private String email;
+    private Long customerId;
+    private Boolean isFraudster;
+    private LocalDateTime createdAt;
 
 }
