@@ -1,5 +1,7 @@
 package com.thereisnouser.customer;
 
+import com.thereisnouser.clients.fraud.FraudCheckResponse;
+import com.thereisnouser.clients.fraud.FraudClient;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -8,7 +10,8 @@ import java.text.MessageFormat;
 @Service
 public record CustomerService(
         CustomerRepository customerRepository,
-        RestTemplate restTemplate
+        RestTemplate restTemplate,
+        FraudClient fraudClient
 ) {
 
     public void registerCustomer(CustomerRegistrationRequest request) {
@@ -20,11 +23,7 @@ public record CustomerService(
 
         customerRepository.saveAndFlush(customer);
 
-        FraudCheckResponse fraudCheckResponse = restTemplate.getForObject(
-                "http://FRAUD/api/v1/fraud-check/{customerId}",
-                FraudCheckResponse.class,
-                customer.getId()
-        );
+        FraudCheckResponse fraudCheckResponse = fraudClient.isFraudster(customer.getId());
 
         if (fraudCheckResponse.isFraudster()) {
             throw new IllegalStateException(MessageFormat.format("customer {0} is fraudster", customer.getId()));
