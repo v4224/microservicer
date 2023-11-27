@@ -2,16 +2,17 @@ package com.thereisnouser.customer;
 
 import com.thereisnouser.clients.fraud.FraudCheckResponse;
 import com.thereisnouser.clients.fraud.FraudClient;
+import com.thereisnouser.clients.notification.NotificationClient;
+import com.thereisnouser.clients.notification.NotificationRequest;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
 import java.text.MessageFormat;
 
 @Service
 public record CustomerService(
         CustomerRepository customerRepository,
-        RestTemplate restTemplate,
-        FraudClient fraudClient
+        FraudClient fraudClient,
+        NotificationClient notificationClient
 ) {
 
     public void registerCustomer(CustomerRegistrationRequest request) {
@@ -28,5 +29,13 @@ public record CustomerService(
         if (fraudCheckResponse.isFraudster()) {
             throw new IllegalStateException(MessageFormat.format("customer {0} is fraudster", customer.getId()));
         }
+
+        notificationClient.send(
+                new NotificationRequest(
+                        MessageFormat.format("Hi, {0}! welcome to our server!", customer.getFirstName()),
+                        "Admin",
+                        customer.getEmail()
+                )
+        );
     }
 }
