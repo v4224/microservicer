@@ -5,4 +5,6 @@ Services destination:
 * Notification - localhost:8082
 * Api-Gateway - localhost:8083
 * Eureka-Server - localhost:8761
+
 * Zipkin - localhost:9411
+* RabbitMQ Management - localhost:15672
