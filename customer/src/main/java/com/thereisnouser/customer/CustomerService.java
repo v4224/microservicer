@@ -1,8 +1,8 @@
 package com.thereisnouser.customer;
 
+import com.thereisnouser.amqp.RabbitMQMessageProducer;
 import com.thereisnouser.clients.fraud.FraudCheckResponse;
 import com.thereisnouser.clients.fraud.FraudClient;
-import com.thereisnouser.clients.notification.NotificationClient;
 import com.thereisnouser.clients.notification.NotificationRequest;
 import org.springframework.stereotype.Service;
 
@@ -12,7 +12,7 @@ import java.text.MessageFormat;
 public record CustomerService(
         CustomerRepository customerRepository,
         FraudClient fraudClient,
-        NotificationClient notificationClient
+        RabbitMQMessageProducer rabbitMQMessageProducer
 ) {
 
     public void registerCustomer(CustomerRegistrationRequest request) {
@@ -30,12 +30,15 @@ public record CustomerService(
             throw new IllegalStateException(MessageFormat.format("customer {0} is fraudster", customer.getId()));
         }
 
-        notificationClient.send(
-                new NotificationRequest(
-                        MessageFormat.format("Hi, {0}! welcome to our server!", customer.getFirstName()),
-                        "Admin",
-                        customer.getEmail()
-                )
+        final NotificationRequest notificationRequest = new NotificationRequest(
+                MessageFormat.format("Hi, {0}! welcome to our server!", customer.getFirstName()),
+                "Admin",
+                customer.getEmail()
+        );
+        rabbitMQMessageProducer.publish(
+                notificationRequest,
+                "internal.exchange",
+                "internal.notification.routing-key"
         );
     }
 }
